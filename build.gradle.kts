@@ -1,14 +1,7 @@
-
-val kotlin_version: String by project
-val logback_version: String by project
-val mongo_version: String by project
-val exposed_version: String by project
-val h2_version: String by project
-
 plugins {
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.0" apply false
     id("io.ktor.plugin") version "2.3.12"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0" apply false
 }
 
 group = "br.com.cat"
@@ -21,22 +14,43 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
-repositories {
-    mavenCentral()
+val kotlinVersion: String by extra("2.3.12")
+val logbackVersion: String by extra("1.5.6")
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    plugins.withId("org.jetbrains.kotlin.jvm") {
+        plugins.apply("org.jetbrains.kotlin.plugin.serialization")
+    }
 }
 
-dependencies {
-    implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
-    implementation("io.ktor:ktor-server-content-negotiation-jvm")
-    implementation("org.mongodb:mongodb-driver-core:$mongo_version")
-    implementation("org.mongodb:mongodb-driver-sync:$mongo_version")
-    implementation("org.mongodb:bson:$mongo_version")
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
-    implementation("com.h2database:h2:$h2_version")
-    implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
-    testImplementation("io.ktor:ktor-server-tests-jvm")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+subprojects {
+    apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    group = "br.com.cat"
+    version = "0.0.1"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        "implementation"(kotlin("stdlib"))
+        "testImplementation"(kotlin("test"))
+
+        "implementation"("io.ktor:ktor-server-core-jvm:$kotlinVersion")
+        "implementation"("io.ktor:ktor-serialization-kotlinx-json-jvm:$kotlinVersion")
+        "implementation"("io.ktor:ktor-server-content-negotiation-jvm:$kotlinVersion")
+        "implementation"("io.ktor:ktor-server-netty-jvm:$kotlinVersion")
+        "implementation"("ch.qos.logback:logback-classic:$logbackVersion")
+        "testImplementation"("io.ktor:ktor-server-tests-jvm:$kotlinVersion")
+        "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
 }
